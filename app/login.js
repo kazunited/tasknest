@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet} from "react-native"
+import { SafeAreaView, StyleSheet, View, Text} from "react-native"
 import { useContext } from "react"
 import { AuthenticationForm } from "../components/AuthenticationForm"
 import { AlternateAuth } from "../components/AlternateAuth"
@@ -21,14 +21,22 @@ export default function Login () {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
+              <View style={{ flexDirection: "row" }}>
+                <View style={styles.divider} />
+                <Text style={styles.title}>
+                    Task<Text style={{ fontWeight: "300", color: Theme.blue }}>Nest</Text>
+
+                </Text>
+                <View style={styles.divider} />
+            </View>
             <AuthenticationForm title="Sign in to your account" action="Sign in" handler={SignIn}/>
             <AlternateAuth 
             text="Don't have an account?" 
             route="/"
             linkText="Sign up here"
             />
-        </SafeAreaView>
+        </View>
     )
 }
 
@@ -38,4 +46,16 @@ const styles = StyleSheet.create({
         backgroundColor: Theme.white,
         justifyContent: "center",
     },
+    divider: {
+        backgroundColor: Theme.lightBlue,
+        height: 1,
+        flex: 1,
+        alignSelf: "center"
+      },
+    title: {
+        fontSize: 38,
+        paddingHorizontal: 64,
+        fontWeight: "600"
+    },
+
 })

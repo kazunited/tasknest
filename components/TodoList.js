@@ -1,7 +1,6 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import { Colors } from 'react-native/Libraries/NewAppScreen'
-
+import { Theme } from "../theme/Theme"
 
 export default TodoList = ({list}) => {
     // read todo data from tempData list 
@@ -44,18 +43,18 @@ const styles = StyleSheet.create({
     listTitle: {
         fontSize: 24,
         fontWeight: "700",
-        color: Colors.white,
+        color: Theme.white,
         marginBottom: 18
     },
     count: {
         fontSize: 48,
         fontWeight: "200",
-        color: Colors.white
+        color: Theme.white
     },
     subtitle: {
         fontSize: 12,
         fontWeight: "700",
-        color: Colors.white
+        color: Theme.white
 
     }
 })
