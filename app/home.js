@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal,ActivityIndicator } from "react-native"
 import { Stack } from "expo-router"
 import React from 'react'
 import { AntDesign } from '@expo/vector-icons'
@@ -7,14 +7,37 @@ import TodoList from '../components/TodoList'
 import { StatusBar } from 'expo-status-bar'
 import AddListModal from "../components/AddListModal"
 import { Theme } from "../theme/Theme"
-
+import Config from "../config/Config"
 
 export default class Home extends React.Component {
 
   state = {
     addTodoVisible: false,
-    lists: tempData
+    lists: tempData,
+    user: {},
+    loading: true
   };
+
+  componentDidMount(){
+    firebase = new Config((error, user) => {
+      if(error){
+        return alert("Something went worng")
+      }
+
+      firebase.getLists(lists => {
+        this.setState({ lists, user }, () => {
+          this.setState({ loading: false });
+
+        });
+      });
+
+      this.setState({ user });
+    });
+  }
+
+  componentWillUnmount(){
+    firebase.detach();
+  }
 
   toggleAddTodoModal() {
     this.setState({ addTodoVisible: !this.state.addTodoVisible });
@@ -39,6 +62,13 @@ export default class Home extends React.Component {
 
 
   render() {
+    if(this.state.loading){
+      return (
+        <View style={styles.container}>
+          <ActivityIndicator size="large" color={Theme.blue} />
+        </View>
+      );
+    }
     return (
       <View style={styles.container}>
         <Modal 
@@ -49,6 +79,9 @@ export default class Home extends React.Component {
           <AddListModal closeModal={() => this.toggleAddTodoModal()} addList={this.addList}/>
 
         </Modal>
+        <View>
+          <Text>User: {this.state.user.uid}</Text>
+        </View>
         <View style={{ flexDirection: "row" }}>
           <View style={styles.divider} />
           <Text style={styles.title}>
@@ -69,7 +102,7 @@ export default class Home extends React.Component {
         <View style={{ height: 275, paddingLeft: 32 }}>
           <FlatList
             data={this.state.lists}
-            keyExtractor={item => item.name}
+            keyExtractor={item => item.id.toString()}
             horizontal={true}
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => this.renderList(item) }
