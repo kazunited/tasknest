@@ -1,14 +1,18 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, FlatList, KeyboardAvoidingView, TextInput,Keyboard } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, FlatList, KeyboardAvoidingView, TextInput, Keyboard, Animated } from 'react-native'
 import React from 'react'
 import { AntDesign } from "@expo/vector-icons"
 import { Theme } from "../theme/Theme"
+import { Swipeable } from 'react-native-gesture-handler'
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+
 
 
 export default class TodoModal extends React.Component {
     state = {
         newTodo: ""
     };
-   
+
     toggleTodoCompleted = index => {
         let list = this.props.list;
         list.todos[index].completed = !list.todos[index].completed;
@@ -18,39 +22,80 @@ export default class TodoModal extends React.Component {
 
     addTodo = () => {
         let list = this.props.list;
-        list.todos.push({ title: this.state.newTodo, completed: false });
 
+       
+      
+        list.todos.push({title: this.state.newTodo, completed: false});
         this.props.updateList(list);
+        
         this.setState({ newTodo: "" });
 
-        Keyboard.dismiss(); 
+        Keyboard.dismiss();
     };
+
+    deleteTodo = index => {
+        let list = this.props.list;
+        list.todos.splice(index, 1);
+
+        this.props.updateList(list);
+    }
 
     renderTodo = (todo, index) => {
         return (
-            <View style={styles.todoContainer}>
-                <TouchableOpacity onPress={ () => this.toggleTodoCompleted(index)}>
-                    <AntDesign
-                        name={todo.completed ? "checksquare" : "checksquareo"}
-                        size={24}
-                        color={Theme.gray}
-                        style={{ width: 32 }} />
-                </TouchableOpacity>
+            <GestureHandlerRootView>
+                <Swipeable renderRightActions={(_, dragX) => this.rightAction(dragX, index)}>
+                    <View style={styles.todoContainer}>
+                        <TouchableOpacity onPress={() => this.toggleTodoCompleted(index)}>
+                            <AntDesign
+                                name={todo.completed ? "checksquare" : "checksquareo"}
+                                size={24}
+                                color={Theme.gray}
+                                style={{ width: 32 }} />
+                        </TouchableOpacity>
 
-                <Text
-                    style={[
-                        styles.todo,
-                        { textDecorationLine: todo.completed ? 'line-through': 'name',
-                         color: todo.completed ? Theme.gray : Theme.black 
-                        }
-                    ]}
-                        
-                >
-                    {todo.title}
-                </Text>
-            </View>
+                        <Text
+                            style={[
+                                styles.todo,
+                                {
+                                    textDecorationLine: todo.completed ? 'line-through' : 'name',
+                                    color: todo.completed ? Theme.gray : Theme.black
+                                }
+                            ]}
+
+                        >
+                            {todo.title}
+                        </Text>
+                    </View>
+                </Swipeable>
+            </GestureHandlerRootView>
         );
     };
+
+    rightAction = (dragX, index) => {
+        const scale = dragX.interpolate({
+            inputRange: [-100, 0],
+            outputRange: [1, 0.9],
+            extrapolate: "clamp"
+        });
+
+        const opacity = dragX.interpolate({
+            inputRange: [-100, -20, 0],
+            outputRange: [1, 0.9, 0],
+            extrapolate: "clamp"
+        })
+        return (
+            <TouchableOpacity onPress={() => this.deleteTodo(index)}>
+                <Animated.View style={[styles.DeleteButton, {opacity: opacity}]}> 
+                    <Animated.Text style={{color: Theme.white, fontWeight:"800", transform: [{ scale }] }}>
+                        Delete
+                    </Animated.Text>
+                </Animated.View>
+            </TouchableOpacity>
+
+        )
+    };
+
+
 
     render() {
         const list = this.props.list
@@ -83,19 +128,19 @@ export default class TodoModal extends React.Component {
                         <FlatList
                             data={list.todos}
                             renderItem={({ item, index }) => this.renderTodo(item, index)}
-                            keyExtractor={(_, index) => index.toString()}
+                            keyExtractor={item => item.title}
                             contentContainerStyle={{ paddingHorizontal: 32, paddingVertical: 64 }}
                             showsVerticalScrollIndicator={false}
                         />
                     </View>
 
                     <View style={[styles.section, styles.footer]} >
-                        <TextInput 
-                        style={[styles.input, { borderColor: list.color }]}  
-                        onChangeText={text => this.setState({newTodo: text})} 
-                        value={this.state.newTodo}
+                        <TextInput
+                            style={[styles.input, { borderColor: list.color }]}
+                            onChangeText={text => this.setState({ newTodo: text })}
+                            value={this.state.newTodo}
                         />
-                        <TouchableOpacity style={[styles.addTodo, { backgroundColor: list.color }]} onPress = {() => this.addTodo()}>
+                        <TouchableOpacity style={[styles.addTodo, { backgroundColor: list.color }]} onPress={() => this.addTodo()}>
                             <AntDesign name="plus" size={16} color={Theme.white} />
                         </TouchableOpacity>
 
@@ -166,8 +211,14 @@ const styles = StyleSheet.create({
         color: Theme.blue,
         fontWeight: "700",
         fontSize: 16
+    },
+    DeleteButton: {
+        flex: 1,
+        backgroundColor: Theme.red,
+        justifyContent: "center",
+        alignItems: "center",
+        width: 80
     }
-
 
 
 });

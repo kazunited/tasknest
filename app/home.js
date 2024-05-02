@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal,ActivityIndic
 import { Stack } from "expo-router"
 import React from 'react'
 import { AntDesign } from '@expo/vector-icons'
-import tempData from './tempData'
 import TodoList from '../components/TodoList'
 import { StatusBar } from 'expo-status-bar'
 import AddListModal from "../components/AddListModal"
@@ -46,17 +45,15 @@ export default class Home extends React.Component {
     return <TodoList list={list} updateList={this.updateList}/>
   };
   addList = list => {
-    this.setState({ lists: [...this.state.lists, {...list, id: this.state.lists.length + 1, todos: []} ] })
+    firebase.addList({
+      name: list.name,
+      color: list.color,
+      todos:[]
+    });
   };
   updateList = list => {
-    this.setState({
-      lists: this.state.lists.map(item => {
+    firebase.updateList(list);
 
-        return item.id === list.id ? list : item;
-      })
-    });
- 
-   
   };
 
 
@@ -79,9 +76,7 @@ export default class Home extends React.Component {
           <AddListModal closeModal={() => this.toggleAddTodoModal()} addList={this.addList}/>
 
         </Modal>
-        <View>
-          <Text>User: {this.state.user.uid}</Text>
-        </View>
+   
         <View style={{ flexDirection: "row" }}>
           <View style={styles.divider} />
           <Text style={styles.title}>
